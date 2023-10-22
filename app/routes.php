@@ -12,10 +12,10 @@ use Slim\Interfaces\RouteCollectorProxyInterface as Group;
 return function (App $app) {
 
     // get
-    $app->get('/countries', function (Request $request, Response $response) {
+    $app->get('/pasien', function (Request $request, Response $response) {
         $db = $this->get(PDO::class);
 
-        $query = $db->query('SELECT * FROM countries');
+        $query = $db->query('SELECT * FROM pasien');
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results));
 
@@ -23,10 +23,10 @@ return function (App $app) {
     });
 
     // get by id
-    $app->get('/countries/{id}', function (Request $request, Response $response, $args) {
+    $app->get('/pasien/{id}', function (Request $request, Response $response, $args) {
         $db = $this->get(PDO::class);
 
-        $query = $db->prepare('SELECT * FROM countries WHERE id=?');
+        $query = $db->prepare('SELECT * FROM pasien WHERE id=?');
         $query->execute([$args['id']]);
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results[0]));
@@ -35,7 +35,7 @@ return function (App $app) {
     });
 
     // post data
-    $app->post('/countries', function (Request $request, Response $response) {
+    $app->post('/pasien', function (Request $request, Response $response) {
         $parsedBody = $request->getParsedBody();
 
         $id = $parsedBody["id"]; // menambah dengan kolom baru
@@ -43,7 +43,7 @@ return function (App $app) {
 
         $db = $this->get(PDO::class);
 
-        $query = $db->prepare('INSERT INTO countries (id, name) values (?, ?)');
+        $query = $db->prepare('INSERT INTO pasien (id, name) values (?, ?)');
 
         // urutan harus sesuai dengan values
         $query->execute([$id, $countryName]);
@@ -52,7 +52,7 @@ return function (App $app) {
 
         $response->getBody()->write(json_encode(
             [
-                'message' => 'country disimpan dengan id ' . $lastId
+                'message' => 'pasien disimpan dengan id ' . $lastId
             ]
         ));
 
@@ -60,19 +60,19 @@ return function (App $app) {
     });
 
     // put data
-    $app->put('/countries/{id}', function (Request $request, Response $response, $args) {
+    $app->put('/pasien/{id}', function (Request $request, Response $response, $args) {
         $parsedBody = $request->getParsedBody();
 
         $currentId = $args['id'];
         $countryName = $parsedBody["name"];
         $db = $this->get(PDO::class);
 
-        $query = $db->prepare('UPDATE countries SET name = ? WHERE id = ?');
+        $query = $db->prepare('UPDATE pasien SET name = ? WHERE id = ?');
         $query->execute([$countryName, $currentId]);
 
         $response->getBody()->write(json_encode(
             [
-                'message' => 'country dengan id ' . $currentId . ' telah diupdate dengan nama ' . $countryName
+                'message' => 'pasien dengan id ' . $currentId . ' telah diupdate dengan nama ' . $countryName
             ]
         ));
 
@@ -80,12 +80,12 @@ return function (App $app) {
     });
 
     // delete data
-    $app->delete('/countries/{id}', function (Request $request, Response $response, $args) {
+    $app->delete('/pasien/{id}', function (Request $request, Response $response, $args) {
         $currentId = $args['id'];
         $db = $this->get(PDO::class);
 
         try {
-            $query = $db->prepare('DELETE FROM countries WHERE id = ?');
+            $query = $db->prepare('DELETE FROM pasien WHERE id = ?');
             $query->execute([$currentId]);
 
             if ($query->rowCount() === 0) {
@@ -98,7 +98,7 @@ return function (App $app) {
             } else {
                 $response->getBody()->write(json_encode(
                     [
-                        'message' => 'country dengan id ' . $currentId . ' dihapus dari database'
+                        'message' => 'pasien dengan id ' . $currentId . ' dihapus dari database'
                     ]
                 ));
             }
