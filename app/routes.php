@@ -15,7 +15,37 @@ return function (App $app) {
     $app->get('/pasien', function (Request $request, Response $response) {
         $db = $this->get(PDO::class);
 
-        $query = $db->query('SELECT * FROM pasien');
+        $query = $db->query('CALL selectPasien()');
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->get('/vaksin', function (Request $request, Response $response) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->query('CALL selectVaksin()');
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->get('/lokasi', function (Request $request, Response $response) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->query('CALL selectLokasi()');
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->get('/vaksinasi', function (Request $request, Response $response) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->query('CALL selectVaksinasi()');
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results));
 
@@ -26,8 +56,45 @@ return function (App $app) {
     $app->get('/pasien/{id}', function (Request $request, Response $response, $args) {
         $db = $this->get(PDO::class);
 
-        $query = $db->prepare('SELECT * FROM pasien WHERE id=?');
-        $query->execute([$args['id']]);
+        $query = $db->prepare('CALL selectPasienById(:id_pasien)');
+        $query->bindParam(':id_pasien', $args['id'], PDO::PARAM_INT);
+        $query->execute();
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results[0]));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->get('/vaksin/{id}', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->prepare('CALL selectVaksinById(:id_vaksin)');
+        $query->bindParam(':id_vaksin', $args['id'], PDO::PARAM_INT);
+        $query->execute();
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results[0]));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->get('/lokasi/{id}', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->prepare('CALL selectLokasiById(:id_lokasi)');
+        $query->bindParam(':id_lokasi', $args['id'], PDO::PARAM_INT);
+        $query->execute();
+        $results = $query->fetchAll(PDO::FETCH_ASSOC);
+        $response->getBody()->write(json_encode($results[0]));
+
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->get('/vaksinasi/{id}', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+
+        $query = $db->prepare('CALL selectPasienById(:id_vaksinasi)');
+        $query->bindParam(':id_vaksinasi', $args['id'], PDO::PARAM_INT);
+        $query->execute();
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
         $response->getBody()->write(json_encode($results[0]));
 
