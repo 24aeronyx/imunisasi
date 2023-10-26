@@ -102,48 +102,81 @@ return function (App $app) {
     });
 
     // post data
+    $app->post('/lokasi', function (Request $request, Response $response) {
+        $parsedBody = $request->getParsedBody();
+    
+        $name = $parsedBody["name"];
+        $address = $parsedBody["address"];
+        $city = $parsedBody["city"];
+    
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL InsertLokasi(?, ?, ?)');
+            $query->execute([$name, $address, $city]);
+    
+            $responseData = [
+                'message' => 'Lokasi disimpan.'
+            ];
+    
+            $response->getBody()->write(json_encode($responseData));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            $responseData = [
+                'error' => 'Terjadi kesalahan dalam penyimpanan lokasi.'
+            ];
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    });
+
     $app->post('/pasien', function (Request $request, Response $response) {
         $parsedBody = $request->getParsedBody();
-
-        $id = $parsedBody["id"]; // menambah dengan kolom baru
-        $countryName = $parsedBody["name"];
-
+    
+        $name = $parsedBody["name"];
+        $birth = $parsedBody["birth"];
+        $phone = $parsedBody["phone"];
+        $address = $parsedBody["address"];
+        $city = $parsedBody["city"];
+    
         $db = $this->get(PDO::class);
-
-        $query = $db->prepare('INSERT INTO pasien (id, name) values (?, ?)');
-
-        // urutan harus sesuai dengan values
-        $query->execute([$id, $countryName]);
-
-        $lastId = $db->lastInsertId();
-
-        $response->getBody()->write(json_encode(
-            [
-                'message' => 'pasien disimpan dengan id ' . $lastId
-            ]
-        ));
-
-        return $response->withHeader("Content-Type", "application/json");
+    
+        try {
+            $query = $db->prepare('CALL InsertPasien(?, ?, ?, ?, ?)');
+            $query->execute([$name, $birth, $phone, $address, $city]);
+    
+            $responseData = [
+                'message' => 'Data pasien disimpan.'
+            ];
+    
+            $response->getBody()->write(json_encode($responseData));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            $responseData = [
+                'error' => 'Terjadi kesalahan dalam penyimpanan data pasien.'
+            ];
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
     });
 
     // put data
     $app->put('/pasien/{id}', function (Request $request, Response $response, $args) {
-        $parsedBody = $request->getParsedBody();
+        try {
+            $parsedBody = $request->getParsedBody();
 
-        $currentId = $args['id'];
-        $countryName = $parsedBody["name"];
-        $db = $this->get(PDO::class);
+            $currentId = $args['id'];
+            $countryName = $parsedBody["name"];
+            $db = $this->get(PDO::class);
 
-        $query = $db->prepare('UPDATE pasien SET name = ? WHERE id = ?');
-        $query->execute([$countryName, $currentId]);
-
-        $response->getBody()->write(json_encode(
-            [
-                'message' => 'pasien dengan id ' . $currentId . ' telah diupdate dengan nama ' . $countryName
-            ]
-        ));
-
-        return $response->withHeader("Content-Type", "application/json");
+            $query = $db->prepare('UPDATE pasien SET name = ? WHERE id = ?');
+            $query->execute([$countryName, $currentId]);
+            $response = $response->withJson([
+                'message' => 'Lokasi disimpan.'
+            ]);
+        } catch (\Exception $e) {
+            $response = $response->withStatus(500)->withJson([
+                'error' => 'Terjadi kesalahan dalam penyimpanan lokasi.'
+            ]);
+        }
     });
 
     // delete data
@@ -178,6 +211,30 @@ return function (App $app) {
             ));
         }
 
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->delete('/lokasi', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL deleteLokasi()');
+            $query->execute();
+    
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Seluruh data lokasi telah dihapus, dan nilai auto increment telah direset.'
+                ]
+            ));
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Database error ' . $e->getMessage()
+                ]
+            ));
+        }
+    
         return $response->withHeader("Content-Type", "application/json");
     });
 };
