@@ -158,6 +158,60 @@ return function (App $app) {
         }
     });
 
+    $app->post('/vaksin', function (Request $request, Response $response) {
+        $parsedBody = $request->getParsedBody();
+    
+        $name = $parsedBody["name"];
+        $category = $parsedBody["category"];
+        $stock = $parsedBody["stock"];
+
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL InsertVaksin(?, ?, ?)');
+            $query->execute([$name, $category, $stock]);
+    
+            $responseData = [
+                'message' => 'Data vaksin tersimpan.'
+            ];
+    
+            $response->getBody()->write(json_encode($responseData));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            $responseData = [
+                'error' => 'Terjadi kesalahan dalam penyimpanan data vaksin.'
+            ];
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    });
+
+    $app->post('/vaksinasi', function (Request $request, Response $response) {
+        $parsedBody = $request->getParsedBody();
+    
+        $p_id = $parsedBody["p_id"];
+        $v_id = $parsedBody["v_id"];
+        $l_id = $parsedBody["l_id"];
+
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL InsertVaksinasi(?, ?, ?)');
+            $query->execute([$p_id, $v_id, $l_id]);
+    
+            $responseData = [
+                'message' => 'Data vaksinasi tersimpan.'
+            ];
+    
+            $response->getBody()->write(json_encode($responseData));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            $responseData = [
+                'error' => 'Terjadi kesalahan dalam penyimpanan data vaksinasi.'
+            ];
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
+    });
+
     // put data
     $app->put('/pasien/{id}', function (Request $request, Response $response, $args) {
         try {
