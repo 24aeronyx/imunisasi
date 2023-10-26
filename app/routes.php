@@ -92,7 +92,7 @@ return function (App $app) {
     $app->get('/vaksinasi/{id}', function (Request $request, Response $response, $args) {
         $db = $this->get(PDO::class);
 
-        $query = $db->prepare('CALL selectPasienById(:id_vaksinasi)');
+        $query = $db->prepare('CALL selectVaksinasiById(:id_vaksinasi)');
         $query->bindParam(':id_vaksinasi', $args['id'], PDO::PARAM_INT);
         $query->execute();
         $results = $query->fetchAll(PDO::FETCH_ASSOC);
@@ -234,40 +234,6 @@ return function (App $app) {
     });
 
     // delete data
-    $app->delete('/pasien/{id}', function (Request $request, Response $response, $args) {
-        $currentId = $args['id'];
-        $db = $this->get(PDO::class);
-
-        try {
-            $query = $db->prepare('DELETE FROM pasien WHERE id = ?');
-            $query->execute([$currentId]);
-
-            if ($query->rowCount() === 0) {
-                $response = $response->withStatus(404);
-                $response->getBody()->write(json_encode(
-                    [
-                        'message' => 'Data tidak ditemukan'
-                    ]
-                ));
-            } else {
-                $response->getBody()->write(json_encode(
-                    [
-                        'message' => 'pasien dengan id ' . $currentId . ' dihapus dari database'
-                    ]
-                ));
-            }
-        } catch (PDOException $e) {
-            $response = $response->withStatus(500);
-            $response->getBody()->write(json_encode(
-                [
-                    'message' => 'Database error ' . $e->getMessage()
-                ]
-            ));
-        }
-
-        return $response->withHeader("Content-Type", "application/json");
-    });
-
     $app->delete('/lokasi', function (Request $request, Response $response, $args) {
         $db = $this->get(PDO::class);
     
@@ -280,6 +246,147 @@ return function (App $app) {
                     'message' => 'Seluruh data lokasi telah dihapus, dan nilai auto increment telah direset.'
                 ]
             ));
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Database error ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->delete('/vaksin', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL deleteVaksin()');
+            $query->execute();
+    
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Seluruh data vaksin telah dihapus, dan nilai auto increment telah direset.'
+                ]
+            ));
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Database error ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->delete('/pasien', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL deletePasien()');
+            $query->execute();
+    
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Seluruh data pasien telah dihapus, dan nilai auto increment telah direset.'
+                ]
+            ));
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Database error ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->delete('/vaksinasi', function (Request $request, Response $response, $args) {
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL deleteVaksinasi()');
+            $query->execute();
+    
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Seluruh data vaksinasi telah dihapus, dan nilai auto increment telah direset.'
+                ]
+            ));
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Database error ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    //delete data by id
+    $app->delete('/lokasi/{id}', function (Request $request, Response $response, $args) {
+        $loc_id = $args['id'];
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeleteLokasiById(?)');
+            $query->execute([$loc_id]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data tidak ditemukan'
+                    ]
+                ));
+            } else {
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data lokasi dengan ID ' . $loc_id . ' telah dihapus.'
+                    ]
+                ));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Database error ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->delete('/vaksinasi/{id}', function (Request $request, Response $response, $args) {
+        $loc_id = $args['id'];
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeleteVaksinasiById(?)');
+            $query->execute([$loc_id]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data tidak ditemukan'
+                    ]
+                ));
+            } else {
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data vaksinasi dengan ID ' . $loc_id . ' telah dihapus.'
+                    ]
+                ));
+            }
         } catch (PDOException $e) {
             $response = $response->withStatus(500);
             $response->getBody()->write(json_encode(
