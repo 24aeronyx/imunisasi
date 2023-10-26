@@ -213,25 +213,25 @@ return function (App $app) {
     });
 
     // put data
-    $app->put('/pasien/{id}', function (Request $request, Response $response, $args) {
-        try {
-            $parsedBody = $request->getParsedBody();
+    // $app->put('/pasien/{id}', function (Request $request, Response $response, $args) {
+    //     try {
+    //         $parsedBody = $request->getParsedBody();
 
-            $currentId = $args['id'];
-            $countryName = $parsedBody["name"];
-            $db = $this->get(PDO::class);
+    //         $currentId = $args['id'];
+    //         $countryName = $parsedBody["name"];
+    //         $db = $this->get(PDO::class);
 
-            $query = $db->prepare('UPDATE pasien SET name = ? WHERE id = ?');
-            $query->execute([$countryName, $currentId]);
-            $response = $response->withJson([
-                'message' => 'Lokasi disimpan.'
-            ]);
-        } catch (\Exception $e) {
-            $response = $response->withStatus(500)->withJson([
-                'error' => 'Terjadi kesalahan dalam penyimpanan lokasi.'
-            ]);
-        }
-    });
+    //         $query = $db->prepare('UPDATE pasien SET name = ? WHERE id = ?');
+    //         $query->execute([$countryName, $currentId]);
+    //         $response = $response->withJson([
+    //             'message' => 'Lokasi disimpan.'
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         $response = $response->withStatus(500)->withJson([
+    //             'error' => 'Terjadi kesalahan dalam penyimpanan lokasi.'
+    //         ]);
+    //     }
+    // });
 
     // delete data
     $app->delete('/lokasi', function (Request $request, Response $response, $args) {
@@ -384,6 +384,74 @@ return function (App $app) {
                 $response->getBody()->write(json_encode(
                     [
                         'message' => 'Data vaksinasi dengan ID ' . $loc_id . ' telah dihapus.'
+                    ]
+                ));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Database error ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->delete('/pasien/{id}', function (Request $request, Response $response, $args) {
+        $loc_id = $args['id'];
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeletePasienById(?)');
+            $query->execute([$loc_id]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data tidak ditemukan'
+                    ]
+                ));
+            } else {
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data pasien dengan ID ' . $loc_id . ' telah dihapus.'
+                    ]
+                ));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode(
+                [
+                    'message' => 'Database error ' . $e->getMessage()
+                ]
+            ));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->delete('/vaksin/{id}', function (Request $request, Response $response, $args) {
+        $loc_id = $args['id'];
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL DeleteVaksinById(?)');
+            $query->execute([$loc_id]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data tidak ditemukan'
+                    ]
+                ));
+            } else {
+                $response->getBody()->write(json_encode(
+                    [
+                        'message' => 'Data vaksin dengan ID ' . $loc_id . ' telah dihapus.'
                     ]
                 ));
             }
