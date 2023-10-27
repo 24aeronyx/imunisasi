@@ -112,7 +112,7 @@ return function (App $app) {
         $db = $this->get(PDO::class);
     
         try {
-            $query = $db->prepare('CALL InsertLokasi(?, ?, ?)');
+            $query = $db->prepare('CALL insertLokasi(?, ?, ?)');
             $query->execute([$name, $address, $city]);
     
             $responseData = [
@@ -141,7 +141,7 @@ return function (App $app) {
         $db = $this->get(PDO::class);
     
         try {
-            $query = $db->prepare('CALL InsertPasien(?, ?, ?, ?, ?)');
+            $query = $db->prepare('CALL insertPasien(?, ?, ?, ?, ?)');
             $query->execute([$name, $birth, $phone, $address, $city]);
     
             $responseData = [
@@ -168,7 +168,7 @@ return function (App $app) {
         $db = $this->get(PDO::class);
     
         try {
-            $query = $db->prepare('CALL InsertVaksin(?, ?, ?)');
+            $query = $db->prepare('CALL insertVaksin(?, ?, ?)');
             $query->execute([$name, $category, $stock]);
     
             $responseData = [
@@ -195,7 +195,7 @@ return function (App $app) {
         $db = $this->get(PDO::class);
     
         try {
-            $query = $db->prepare('CALL InsertVaksinasi(?, ?, ?)');
+            $query = $db->prepare('CALL insertVaksinasi(?, ?, ?)');
             $query->execute([$p_id, $v_id, $l_id]);
     
             $responseData = [
@@ -213,26 +213,144 @@ return function (App $app) {
     });
 
     // put data
-    // $app->put('/pasien/{id}', function (Request $request, Response $response, $args) {
-    //     try {
-    //         $parsedBody = $request->getParsedBody();
+    $app->put('/vaksin/{id}', function (Request $request, Response $response, $args) {
+        $vaksinId = $args['id'];
+        $data = $request->getParsedBody();
+    
+        $name = $data['name'];
+        $category = $data['category'];
+        $stock = $data['stock'];
+    
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL updateVaksinById(?, ?, ?, ?)');
+            $query->execute([$vaksinId, $name, $category, $stock]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data tidak ditemukan'
+                ]));
+            } else {
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data vaksin dengan ID ' . $vaksinId . ' telah diperbarui.'
+                ]));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode([
+                'message' => 'Database error ' . $e->getMessage()
+            ]));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
 
-    //         $currentId = $args['id'];
-    //         $countryName = $parsedBody["name"];
-    //         $db = $this->get(PDO::class);
+    $app->put('/pasien/{id}', function (Request $request, Response $response, $args) {
+        $pasienId = $args['id'];
+        $data = $request->getParsedBody(); 
+    
+        $name = $data['name'];
+        $birth = $data['birth'];
+        $phone = $data['phone'];
+        $address = $data['address'];
+        $city = $data['city'];
+    
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL updatePasienById(?, ?, ?, ?, ?, ?)');
+            $query->execute([$pasienId, $name, $birth, $phone, $address, $city]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data tidak ditemukan'
+                ]));
+            } else {
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data pasien dengan ID ' . $pasienId . ' telah diperbarui.'
+                ]));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode([
+                'message' => 'Database error ' . $e->getMessage()
+            ]));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
 
-    //         $query = $db->prepare('UPDATE pasien SET name = ? WHERE id = ?');
-    //         $query->execute([$countryName, $currentId]);
-    //         $response = $response->withJson([
-    //             'message' => 'Lokasi disimpan.'
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         $response = $response->withStatus(500)->withJson([
-    //             'error' => 'Terjadi kesalahan dalam penyimpanan lokasi.'
-    //         ]);
-    //     }
-    // });
+    $app->put('/lokasi/{id}', function (Request $request, Response $response, $args) {
+        $lokasiId = $args['id'];
+        $data = $request->getParsedBody(); 
 
+        $name = $data['name'];
+        $address = $data['address'];
+        $city = $data['city'];
+    
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL updateLokasiById(?, ?, ?, ?)');
+            $query->execute([$lokasiId, $name, $address, $city]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data tidak ditemukan'
+                ]));
+            } else {
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data lokasi dengan ID ' . $lokasiId . ' telah diperbarui.'
+                ]));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode([
+                'message' => 'Database error ' . $e->getMessage()
+            ]));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+
+    $app->put('/vaksinasi/{id}', function (Request $request, Response $response, $args) {
+        $vaksinasiId = $args['id'];
+        $data = $request->getParsedBody(); 
+
+        $p_id = $data['p_id'];
+        $v_id = $data['v_id'];
+        $l_id= $data['l_id'];
+    
+        $db = $this->get(PDO::class);
+    
+        try {
+            $query = $db->prepare('CALL updateVaksinasiById(?, ?, ?, ?)');
+            $query->execute([$vaksinasiId, $p_id, $v_id, $l_id]);
+    
+            if ($query->rowCount() === 0) {
+                $response = $response->withStatus(404);
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data tidak ditemukan'
+                ]));
+            } else {
+                $response->getBody()->write(json_encode([
+                    'message' => 'Data lokasi dengan ID ' . $vaksinasiId . ' telah diperbarui.'
+                ]));
+            }
+        } catch (PDOException $e) {
+            $response = $response->withStatus(500);
+            $response->getBody()->write(json_encode([
+                'message' => 'Database error ' . $e->getMessage()
+            ]));
+        }
+    
+        return $response->withHeader("Content-Type", "application/json");
+    });
+    
     // delete data
     $app->delete('/lokasi', function (Request $request, Response $response, $args) {
         $db = $this->get(PDO::class);
